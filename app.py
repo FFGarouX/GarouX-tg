@@ -88,10 +88,11 @@ def get_reply_markup():
 
 # ==================== ФУНКЦИЯ ОТПРАВКИ РАНДОМНОГО ФОТО С ТЕКСТОМ ====================
 async def send_response_with_photo(update: Update, context: ContextTypes.DEFAULT_TYPE, text: str, delete_message=None):
-    """Выбирает случайное фото из папки pp/ и отправляет его вместе с текстом (caption) одним сообщением"""
+    """Выбирает случайное фото из корня проекта и отправляет его вместе с текстом (caption) одним сообщением"""
     try:
         photo_num = random.randint(1, 10)
-        photo_path = f"pp/{photo_num:03d}.png"  # 001.png, 002.png...
+        # Убрали папочку "pp/", теперь ищет файлы 001.png, 002.png прямо рядом с кодом
+        photo_path = f"{photo_num:03d}.png"  
         
         if os.path.exists(photo_path):
             with open(photo_path, 'rb') as photo_file:
@@ -107,9 +108,9 @@ async def send_response_with_photo(update: Update, context: ContextTypes.DEFAULT
                 )
                 return
         else:
-            logger.warning(f"Файл {photo_path} не найден! Отправляю просто текст.")
+            logger.warning(f"Файл {photo_path} не найден в корне проекта! Отправляю просто текст.")
     except Exception as e:
-        logger.error(f"Ошибка отправки фото из pp: {e}")
+        logger.error(f"Ошибка отправки фото: {e}")
         
     if delete_message:
         try: await delete_message.edit_text(text, parse_mode=ParseMode.HTML, reply_markup=get_reply_markup())
