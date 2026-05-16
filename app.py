@@ -477,24 +477,47 @@ app.add_handler(CommandHandler("visitx", visit_command))
 app.add_handler(CommandHandler("level", level_command))
 app.add_handler(MessageHandler(filters.TEXT, text_handler))
 
-# ЭТА ФУНКЦИЯ ОБЯЗАТЕЛЬНА ДЛЯ VERCEL (именно её он ищет)
+# ==================== ЗАПУСК БОТА ДЛЯ VERCEL ====================
+import json
+
+app = Application.builder().token(BOT_TOKEN).build()
+
+# Регистрация обработчиков (Исправлено сопоставление функций)
+app.add_handler(CommandHandler("start", start))
+app.add_handler(CommandHandler("help", help_command))
+app.add_handler(CommandHandler("get", get_command))
+app.add_handler(CommandHandler("outfit", outfit_command))
+
+# ВНИМАНИЕ: Если функции add_command нет, проверь, не удалил ли ты её!
+app.add_handler(CommandHandler("baner", add_command)) 
+
+app.add_handler(CommandHandler("bio", bio_command))
+app.add_handler(CommandHandler("visit", six_command))
+app.add_handler(CommandHandler("spam", spam_command))
+app.add_handler(CommandHandler("visitx", visit_command))
+app.add_handler(CommandHandler("level", level_command))
+
+# Дополнительные команды, если ты создавал для них функции:
+# app.add_handler(CommandHandler("3", three_command))
+# app.add_handler(CommandHandler("5", five_command))
+# app.add_handler(CommandHandler("like", like_command))
+
+app.add_handler(MessageHandler(filters.TEXT, text_handler))
+
+# Главный обработчик Vercel
 async def handler(request, start_response):
     if request.get('REQUEST_METHOD') == 'POST':
         try:
-            # Читаем данные, которые прислал Telegram (Update)
             request_body_size = int(request.get('CONTENT_LENGTH', 0))
             request_body = request['wsgi.input'].read(request_body_size)
             update_data = json.loads(request_body.decode('utf-8'))
             
-            # Быстро запускаем бота, обрабатываем апдейт и закрываем
             await app.initialize()
             update = Update.de_json(update_data, app.bot)
             await app.process_update(update)
             await app.shutdown()
         except Exception as e:
-            logger.error(f"Ошибка внутри Webhook handler: {e}")
+            logger.error(f"Ошибка Webhook handler: {e}")
             
-    # Говорим Vercel, что всё прошло успешно
     start_response('200 OK', [('Content-Type', 'text/plain')])
     return [b"OK"]
-                                                
